@@ -1,44 +1,25 @@
 import asyncio
-from aiogram import Bot, Dispatcher,  types
-from aiogram.filters.command import Command
+from aiogram import Bot, Dispatcher
 from dotenv import dotenv_values
-import random
 import logging
+
+
+from handlers.start import start_router
+from handlers.info import info_router
+from handlers.random import random_router
+from handlers.other_messange import other_router
 
 token = dotenv_values('.env')['TOKEN']
 bot = Bot(token=token)
 dp = Dispatcher()
 
-unique_users = set()
-
-@dp.message(Command("start"))
-async def start_handler(message: types.Message):
-    name = message.from_user.first_name
-    unique_users.add(message.from_user.id)
-
-    unser_count = len(unique_users)
-    await message.answer(f"Здравствуйте , {name}!\n"
-                         f"Наш бот обслуживает {unser_count} пользователя(ей). ")
-
-@dp.message(Command("myinfo"))
-async def myinfo_handler(message: types.Message):
-    name = message.from_user.first_name
-    await message.answer((f'Ваше имя: {name}\n'
-                         f'Ваш id: {message.from_user.id}\n'
-                         f'Ваш username: {message.from_user.username}'))
-
-@dp.message(Command("random"))
-async def random_handler(message: types.Message):
-    random_name = random.choice(["Асема", "Ахмад", "Дастан", "Адина", "Ариет", "Эмир"])
-    await message.answer(f"Случайное имя: {random_name}")
-
-
-@dp.message()
-async def other_massages_handler(message: types.Message):
-    text = message.text
-    await message.answer(text)
 
 async def main():
+    dp.include_router(start_router)
+    dp.include_router(info_router)
+    dp.include_router(random_router)
+
+    dp.include_router(other_router)
     await dp.start_polling(bot)
 
 
