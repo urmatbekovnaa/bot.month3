@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher
 from dotenv import dotenv_values
 import logging
 
-
+#
 from handlers.start import start_router
 from handlers.info import info_router
 from handlers.random import random_router
@@ -26,4 +26,3 @@ async def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
-
