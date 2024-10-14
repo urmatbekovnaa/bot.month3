@@ -1,17 +1,13 @@
 import asyncio
-from aiogram import Bot, Dispatcher
-from dotenv import dotenv_values
 import logging
 
-#
+
+from config import bot, dp
 from handlers.start import start_router
 from handlers.info import info_router
-from handlers.random import random_router
+from handlers.pic import random_router
 from handlers.other_messange import other_router
 
-token = dotenv_values('.env')['TOKEN']
-bot = Bot(token=token)
-dp = Dispatcher()
 
 
 async def main():
