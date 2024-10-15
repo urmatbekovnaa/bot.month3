@@ -79,3 +79,4 @@ async def locations_handler(callback: types.CallbackQuery):
     text = "Адреса пиццерий:\nмкрн. Кок-Жар, 5/1\nпр-т Манаса , 7\nпер. Шевченко, 80"
     await callback.message.answer(text)
 
+
