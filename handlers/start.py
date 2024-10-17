@@ -36,14 +36,14 @@ async def start_handler(message: types.Message):
                 ),
 
                 types.InlineKeyboardButton(
-                    text="Вопросы, Отзывы",
+                    text="Адреса пиццерии",
                     url="https://dodopizza.kg/bishkek/contacts"
                 )
             ],
             [
                 types.InlineKeyboardButton(
-                    text="Адреса пиццерии",
-                    callback_data="location"
+                    text="Вопросы, Отзывы",
+                    callback_data="feedback"
 
                 )
             ],
@@ -72,11 +72,4 @@ async def vacancy_handler(callback: types.CallbackQuery):
     text = "Вакансии:\n 1. Кассир\n 2. Курьер\n 3. Оператор:\n" \
            "Отклик на вакансию можно оставить по телефону: 0(312) 550 550"
     await callback.message.answer(text)
-
-
-@start_router.callback_query(F.data == "location")
-async def locations_handler(callback: types.CallbackQuery):
-    text = "Адреса пиццерий:\nмкрн. Кок-Жар, 5/1\nпр-т Манаса , 7\nпер. Шевченко, 80"
-    await callback.message.answer(text)
-
 
