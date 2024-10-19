@@ -3,6 +3,8 @@ from aiogram.filters.command import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
+from config import database
+
 reviewdialog_router = Router()
 
 class RestourantReview(StatesGroup):
@@ -14,7 +16,6 @@ class RestourantReview(StatesGroup):
     extra_comments = State()
 
 
-@reviewdialog_router.message(Command("router"))
 @reviewdialog_router.callback_query(lambda call: call.data == "feedback")
 async def start_feedback_handler(callback: types.Message, state: FSMContext):
     await state.set_state(RestourantReview.name)
@@ -63,7 +64,11 @@ async def process_visit_date(message: types.Message, state: FSMContext):
 
 @reviewdialog_router.message(RestourantReview.food_rating)
 async def process_food_rating(message: types.Message, state: FSMContext):
-    await state.update_data(food_rating=message.text)
+    food_rating = message.text
+    if food_rating not in ["1", "2", "3", "4", "5"]:
+        await message.answer("Пожалуйста, выберите оценку от 1 до 5.")
+        return
+    await state.update_data(food_rating=food_rating)
     await state.set_state(RestourantReview.cleanliness_rating)
     kb = types.ReplyKeyboardMarkup(
         keyboard=[
@@ -82,6 +87,10 @@ async def process_food_rating(message: types.Message, state: FSMContext):
 
 @reviewdialog_router.message(RestourantReview.cleanliness_rating)
 async def process_cleanliness_rating(message: types.Message, state: FSMContext):
+    cleanliness_rating = message.text
+    if cleanliness_rating not in ["1", "2", "3", "4", "5"]:
+        await message.answer("Пожалуйста, выберите оценку от 1 до 5.")
+        return
     await state.update_data(cleanliness_rating=message.text)
     await state.set_state(RestourantReview.extra_comments)
     await message.answer("Если ли у вас еще какие-то комментарии?")
@@ -90,6 +99,25 @@ async def process_cleanliness_rating(message: types.Message, state: FSMContext):
 @reviewdialog_router.message(RestourantReview.extra_comments)
 async def process_genre(message: types.Message, state: FSMContext):
     await state.update_data(extra_comments=message.text)
+    data = await state.get_data()
+    print(data)
+
+
+    database.execute(
+        """
+        INSERT INTO survey_results (name, phone, visit_date, food_rating, cleanliness_rating, extra_comments)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            data["name"],
+            data["phone"],
+            data["visit_date"],
+            data["food_rating"],
+            data["cleanliness_rating"],
+            data["extra_comments"]
+        )
+
+    )
 
     await message.answer("Спасибо за ваш отзыв!")
     await state.clear()
