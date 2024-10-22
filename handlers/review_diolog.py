@@ -116,7 +116,6 @@ async def process_genre(message: types.Message, state: FSMContext):
             data["cleanliness_rating"],
             data["extra_comments"]
         )
-
     )
 
     await message.answer("Спасибо за ваш отзыв!")
