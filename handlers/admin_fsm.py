@@ -5,7 +5,6 @@ from aiogram.fsm.context import FSMContext
 
 from config import database
 
-admin_add_router = Router()
 
 class FoodAdd(StatesGroup):
     name = State()
@@ -15,6 +14,7 @@ class FoodAdd(StatesGroup):
     confirm = State()
 
 
+admin_add_router = Router()
 admin = 1014937406
 
 @admin_add_router.message(Command("add_food"))
@@ -28,7 +28,7 @@ async def start_food_add(message: types.Message, state: FSMContext):
 @admin_add_router.message(FoodAdd.name)
 async def process_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text.title())
-    await message.answer("Введите категорию блюда:")
+    await message.answer("Введите подходящую категорию блюда:")
     await state.set_state(FoodAdd.category)
 
 @admin_add_router.message(FoodAdd.category)
