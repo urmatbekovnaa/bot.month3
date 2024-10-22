@@ -13,7 +13,6 @@ class FoodAdd(StatesGroup):
     weight = State()
     confirm = State()
 
-
 admin_add_router = Router()
 admin = 1014937406
 
@@ -23,7 +22,8 @@ async def start_food_add(message: types.Message, state: FSMContext):
         await message.answer("Введите название блюда:")
         await state.set_state(FoodAdd.name)
     else:
-        await message.answer("Вы не админ!!!")
+        await message.answer("Вы не админ!!")
+
 
 @admin_add_router.message(FoodAdd.name)
 async def process_name(message: types.Message, state: FSMContext):
@@ -31,11 +31,13 @@ async def process_name(message: types.Message, state: FSMContext):
     await message.answer("Введите подходящую категорию блюда:")
     await state.set_state(FoodAdd.category)
 
+
 @admin_add_router.message(FoodAdd.category)
 async def process_category(message: types.Message, state: FSMContext):
     await state.update_data(category=message.text)
     await message.answer("Введите цену блюда:")
     await state.set_state(FoodAdd.price)
+
 
 @admin_add_router.message(FoodAdd.price)
 async def process_price(m: types.Message, state: FSMContext):
@@ -47,6 +49,7 @@ async def process_price(m: types.Message, state: FSMContext):
     else:
         await m.answer("Пожалуйста, введите корректное число!!")
 
+
 @admin_add_router.message(FoodAdd.weight)
 async def process_weight(m: types.Message, state: FSMContext):
     if m.text.isdigit():
@@ -55,6 +58,7 @@ async def process_weight(m: types.Message, state: FSMContext):
         await state.set_state(FoodAdd.confirm)
     else:
         await m.answer("Пожалуйста, введите корректное число!!")
+
 
 @admin_add_router.message(FoodAdd.confirm)
 async def process_confirm(m: types.Message, state: FSMContext, db=database):
@@ -71,4 +75,4 @@ async def process_confirm(m: types.Message, state: FSMContext, db=database):
         await m.answer("Отмена добавления блюда.")
         await state.clear()
     else:
-        await m.answer("confirm or cancel.")
+        await m.answer("Confirm or Cancel.")
