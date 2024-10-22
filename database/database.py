@@ -9,7 +9,7 @@ class Database:
     def create_table(self):
         with sqlite3.connect(self.path) as connection:
             connection.execute("""
-            CREATE TABLE IF NOT EXISTS survey_results (
+            CREATE TABLE IF NOT EXISTS rewies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
                 phone TEXT,
@@ -19,6 +19,18 @@ class Database:
                 extra_comments TEXT
             )
             """)
+
+            connection.execute("""
+            CREATE TABLE IF NOT EXISTS foods(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name VERCHAR(40),
+                category VERCHAR(40),
+                price INTEGER,
+                weight FLOAT
+            
+            )
+            """)
+
             connection.commit()
 
 
