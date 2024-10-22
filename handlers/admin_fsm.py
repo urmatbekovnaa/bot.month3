@@ -74,7 +74,7 @@ async def process_confirm(m: types.Message, state: FSMContext, db=database):
                          )
         await state.clear()
     elif m.text == 'cancel':
-        await m.answer("Отмена добавления блюда.")
+        await m.answer("Отмена добавления блюда")
         await state.clear()
     else:
         await m.answer("Confirm or Cancel.")
