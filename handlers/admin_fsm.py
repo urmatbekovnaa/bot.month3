@@ -13,8 +13,10 @@ class FoodAdd(StatesGroup):
     weight = State()
     confirm = State()
 
+
 admin_add_router = Router()
 admin = 1014937406
+
 
 @admin_add_router.message(Command("add_food"))
 async def start_food_add(message: types.Message, state: FSMContext):
