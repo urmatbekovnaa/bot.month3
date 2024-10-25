@@ -30,7 +30,22 @@ async def start_food_add(message: types.Message, state: FSMContext):
 @admin_add_router.message(FoodAdd.name)
 async def process_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text.title())
-    await message.answer("Введите подходящую категорию блюда:")
+    kb = types.ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                types.KeyboardButton(text="Горячии блюда"),
+                types.KeyboardButton(text="Салаты")
+            ],
+            [
+                types.KeyboardButton(text="Десерты"),
+                types.KeyboardButton(text="Напитки"),
+                types.KeyboardButton(text="Закуски")
+
+            ]
+        ],
+        resize_keyboard = True
+    )
+    await message.answer("Выберите подходящую категорию блюда:", reply_markup = kb)
     await state.set_state(FoodAdd.category)
 
 
@@ -56,7 +71,16 @@ async def process_price(m: types.Message, state: FSMContext):
 async def process_weight(m: types.Message, state: FSMContext):
     if m.text.isdigit():
         await state.update_data(weight=m.text)
-        await m.answer('Введите confirm для добавление, \n или cancel для отмены.')
+        kb = types.ReplyKeyboardMarkup(
+            keyboard=[
+                [
+                    types.KeyboardButton(text="confirm"),
+                    types.KeyboardButton(text="cancel")
+                ]
+            ],
+            resize_keyboard=True
+        )
+        await m.answer('Выберите подходяший ответ', reply_markup=kb)
         await state.set_state(FoodAdd.confirm)
     else:
         await m.answer("Пожалуйста, введите корректное число!!")
@@ -68,9 +92,9 @@ async def process_confirm(m: types.Message, state: FSMContext, db=database):
         await m.answer("Блюдо добавлено.")
         data = await state.get_data()
         database.execute('''
-            INSERT INTO foods(name,category, price, weight) VALUES (?, ?, ?, ?)
+            INSERT INTO dishes(name,category, price, weight) VALUES (?, ?, ?, ?)
             ''',
-                         (data['name'], data['category'], data['price'], m.text)
+                         (data['name'], data['category'], data['price'], data['weight'])
                          )
         await state.clear()
     elif m.text == 'cancel':

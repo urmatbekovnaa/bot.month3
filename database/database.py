@@ -20,14 +20,15 @@ class Database:
             )
             """)
 
+
             connection.execute("""
-            CREATE TABLE IF NOT EXISTS foods(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VERCHAR(40),
-                category VERCHAR(40),
-                price INTEGER,
-                weight FLOAT
-            
+            CREATE TABLE IF NOT EXISTS dishes(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VERCHAR(40),
+            price INTEGER,
+            weight FLOAT
+            category_id INTEGER,
+            FOREIGN KEY (category_id) REFERENCES categories(id)
             )
             """)
 
@@ -38,3 +39,12 @@ class Database:
         with sqlite3.connect(self.path) as connection:
             connection.execute(query, params)
             connection.commit()
+
+
+    def fetch(self, query: str, params: tuple = tuple()):
+        with sqlite3.connect(self.path) as conn:
+            result = conn.execute(query, params)
+            result.row_factory = sqlite3.Row
+
+            data = result.fetchall()
+            return [dict(row) for row in data]
