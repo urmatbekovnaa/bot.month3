@@ -1,7 +1,5 @@
 import sqlite3
 
-conn = sqlite3.connect('sqlite.db')
-cursor = conn.cursor()
 
 class Database:
     def __init__(self, path):
