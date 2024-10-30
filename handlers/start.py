@@ -1,12 +1,22 @@
 from aiogram import Router, F, types
-# from aiogram.types import Message, InlineKeyboardMarkup
+from aiogram.types import Message, InlineKeyboardMarkup
 from aiogram.filters.command import Command
+
+from config import database
 
 start_router = Router()
 
+
 @start_router.message(Command("start"))
 async def start_handler(message: types.Message):
-    name = message.from_user.first_name
+    name = message.from_user.username
+
+    user_summ = database.fetch("SELECT DISTINCT user_id FROM users")
+    summ = len(user_summ)
+
+    await message.answer(f"Доброго времени суток {name}.\n"
+                         f"На данный момент в боте зарегистрировано {summ} пользователей")
+
     kb = types.InlineKeyboardMarkup(
         inline_keyboard=[
             [

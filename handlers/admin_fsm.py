@@ -1,3 +1,5 @@
+import sqlite3
+
 from aiogram import Router, F, types
 from aiogram.filters.command import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -14,37 +16,50 @@ class FoodAdd(StatesGroup):
     confirm = State()
 
 
+class CategoryAdd(StatesGroup):
+    name = State()
+
+
 admin_add_router = Router()
 admin = 1014937406
+admin_add_router.message.filter(F.from_user.id == admin)
+
+
+@admin_add_router.message(Command("add_category"))
+async def start_category_add(message: types.Message, state: FSMContext):
+    await state.set_state(CategoryAdd.name)
+    await message.answer("Введите название категории:")
+
+
+@admin_add_router.message(CategoryAdd.name)
+async def process_name(message: types.Message, state: FSMContext):
+    name = message.text
+    database.execute(
+        query="INSERT INTO categories (category_name) VALUES (?)",
+        params=(name,)
+    )
+    await state.clear()
+    await message.answer("Категория успешно добавлена!")
 
 
 @admin_add_router.message(Command("add_food"))
 async def start_food_add(message: types.Message, state: FSMContext):
-    if message.from_user.id == admin:
-        await message.answer("Введите название блюда:")
-        await state.set_state(FoodAdd.name)
-    else:
-        await message.answer("Вы не админ!!")
+    await state.set_state(FoodAdd.name)
+    await message.answer("Введите название блюда:")
 
 
 @admin_add_router.message(FoodAdd.name)
 async def process_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text.title())
-    kb = types.ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                types.KeyboardButton(text="Горячии блюда"),
-                types.KeyboardButton(text="Салаты")
-            ],
-            [
-                types.KeyboardButton(text="Десерты"),
-                types.KeyboardButton(text="Напитки"),
-                types.KeyboardButton(text="Закуски")
+    await state.set_state(FoodAdd.category)
 
-            ]
-        ],
-        resize_keyboard = True
-    )
+    categories = database.fetch(
+        query="SELECT name FROM categories")
+
+    kb = types.ReplyKeyboardMarkup(
+        keyboard=[[types.KeyboardButton(text=category[0])] for category in categories],
+        resize_keyboard=True)
+
     await message.answer("Выберите подходящую категорию блюда:", reply_markup = kb)
     await state.set_state(FoodAdd.category)
 
@@ -80,7 +95,6 @@ async def process_weight(m: types.Message, state: FSMContext):
             ],
             resize_keyboard=True
         )
-        await m.answer('Выберите подходяший ответ', reply_markup=kb)
         await state.set_state(FoodAdd.confirm)
     else:
         await m.answer("Пожалуйста, введите корректное число!!")
@@ -89,12 +103,16 @@ async def process_weight(m: types.Message, state: FSMContext):
 @admin_add_router.message(FoodAdd.confirm)
 async def process_confirm(m: types.Message, state: FSMContext, db=database):
     if m.text == 'confirm':
-        await m.answer("Блюдо добавлено.")
         data = await state.get_data()
+        category_id = database.fetch(
+            query="SELECT id FROM categories WHERE category_name = ?",
+            params=(data['category'],)
+        )[0][0]
+
         database.execute('''
-            INSERT INTO dishes(name,category, price, weight) VALUES (?, ?, ?, ?)
+            INSERT INTO dishes(name,category, price, weight, category_id) VALUES (?, ?, ?, ?, ?)
             ''',
-                         (data['name'], data['category'], data['price'], data['weight'])
+                         (data['name'], data['category'], data['price'], data['weight'], category_id)
                          )
         await state.clear()
     elif m.text == 'cancel':

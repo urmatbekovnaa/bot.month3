@@ -18,6 +18,14 @@ class RestourantReview(StatesGroup):
 
 @reviewdialog_router.callback_query(lambda call: call.data == "feedback")
 async def start_feedback_handler(callback: types.Message, state: FSMContext):
+    user_tg_id = database.fetch(
+        query="SELECT * FROM survey_rewies WHERE tg_id = ?",
+        params=(callback.from_user.id,)
+    )
+    print(user_tg_id)
+    if len(user_tg_id) == 0:
+        await callback.message.answer("Вы уже проходили опрос!")
+        return
     await state.set_state(RestourantReview.name)
     await callback.message.answer("Добрый день, как вас зовут?")
 
@@ -100,13 +108,14 @@ async def process_cleanliness_rating(message: types.Message, state: FSMContext):
 async def process_genre(message: types.Message, state: FSMContext):
     await state.update_data(extra_comments=message.text)
     data = await state.get_data()
+    tg_id = message.from_user.id
     print(data)
 
 
     database.execute(
         """
-        INSERT INTO survey_results (name, phone, visit_date, food_rating, cleanliness_rating, extra_comments)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO survey_rewies (name, phone, visit_date, food_rating, cleanliness_rating, extra_comments, tg_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             data["name"],
@@ -114,7 +123,8 @@ async def process_genre(message: types.Message, state: FSMContext):
             data["visit_date"],
             data["food_rating"],
             data["cleanliness_rating"],
-            data["extra_comments"]
+            data["extra_comments"],
+            data["tg_id"]
         )
     )
 
