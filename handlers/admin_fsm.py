@@ -104,10 +104,12 @@ async def process_weight(m: types.Message, state: FSMContext):
 async def process_confirm(m: types.Message, state: FSMContext, db=database):
     if m.text == 'confirm':
         data = await state.get_data()
-        category_id = database.fetch(
+        category = database.fetch(
             query="SELECT id FROM categories WHERE category_name = ?",
             params=(data['category'],)
         )[0][0]
+
+        category_id = category[0]['id']
 
         database.execute('''
             INSERT INTO dishes(name,category, price, weight, category_id) VALUES (?, ?, ?, ?, ?)
